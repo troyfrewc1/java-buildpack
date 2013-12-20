@@ -37,7 +37,6 @@ module JavaBuildpack::Container
           @droplet.java_opts.as_env_var,
           "$PWD/#{(@droplet.sandbox + 'bin/spring').relative_path_from(@droplet.root)}",
           'run',
-          '--local',
           relative_groovy_files,
           '--',
           '--server.port=$PORT'
