@@ -1,0 +1,12 @@
+---
+baseurl: /java-buildpack
+exclude:
+  - CONTRIBUTING.md
+  - README.md
+markdown: redcarpet
+redcarpet:
+  extensions:
+    - autolink
+    - no_intra_emphasis
+    - smart
+    - tables

@@ -1,0 +1,24 @@
+<table>
+  <tr>
+    <td><strong>Detection Criteria</strong></td>
+    <td>
+      <ul>
+        {% for criteria in page.detection_criteria %}
+        <li>{{criteria | markdownify | remove: '<p>' | remove: '</p>' }}</li>
+        {% endfor %}
+        </ul>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Tags</strong></td>
+    <td>
+      <ul>
+        {% for tag in page.tags %}
+        <li><tt>{{tag | xml_escape}}</tt></li>
+        {% endfor %}
+      </ul>
+    </td>
+  </tr>
+</table>
+
+Tags are printed to standard output by the buildpack detect script
