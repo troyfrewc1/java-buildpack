@@ -150,8 +150,8 @@ module JavaBuildpack::Util
           rich_uri = URI(uri)
 
           # Beware known problems with timeouts: https://www.ruby-forum.com/topic/143840
-          Net::HTTP.start(rich_uri.host, rich_uri.port, read_timeout: TIMEOUT_SECONDS, connect_timeout: TIMEOUT_SECONDS, open_timeout: TIMEOUT_SECONDS) do |http|
-            request = Net::HTTP::Get.new(uri)
+          proxy(rich_uri).start(rich_uri.host, rich_uri.port, read_timeout: TIMEOUT_SECONDS, connect_timeout: TIMEOUT_SECONDS, open_timeout: TIMEOUT_SECONDS) do |http|
+            request = Net::HTTP::Get.new(rich_uri.path)
             http.request request do |response|
               internet_up = response.code == HTTP_OK
               write_response(filenames, response) if internet_up
@@ -181,6 +181,15 @@ module JavaBuildpack::Util
       end
     end
 
+    def self.proxy(uri)
+      if use_ssl?(uri)
+          proxy = URI.parse(ENV['https_proxy']||"")
+      else
+          proxy = URI.parse(ENV['http_proxy']||"")
+      end
+      Net::HTTP::Proxy(proxy.host, proxy.port)
+    end
+
     def delete_file(filename)
       File.delete filename if File.exists? filename
     end
@@ -190,8 +199,8 @@ module JavaBuildpack::Util
         begin
           rich_uri = URI(uri)
 
-          Net::HTTP.start(rich_uri.host, rich_uri.port, use_ssl: DownloadCache.use_ssl?(rich_uri)) do |http|
-            request = Net::HTTP::Get.new(uri)
+          DownloadCache.proxy(rich_uri).start(rich_uri.host, rich_uri.port, use_ssl: DownloadCache.use_ssl?(rich_uri)) do |http|
+            request = Net::HTTP::Get.new(rich_uri.path)
             http.request request do |response|
               DownloadCache.write_response(filenames, response)
             end
@@ -263,8 +272,8 @@ module JavaBuildpack::Util
     def update(filenames, uri)
       rich_uri = URI(uri)
 
-      Net::HTTP.start(rich_uri.host, rich_uri.port, use_ssl: DownloadCache.use_ssl?(rich_uri)) do |http|
-        request = Net::HTTP::Get.new(uri)
+      DownloadCache.proxy(rich_uri).start(rich_uri.host, rich_uri.port, use_ssl: DownloadCache.use_ssl?(rich_uri)) do |http|
+        request = Net::HTTP::Get.new(rich_uri.path)
         set_header request, 'If-None-Match', filenames[:etag]
         set_header request, 'If-Modified-Since', filenames[:last_modified]
 
